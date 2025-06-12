@@ -22,7 +22,7 @@ jobs:
 
       # Publish the site
       - name: Publish
-        run: dotnet publish ./Movie/Movie.csproj -c:Release -o:publish -p:GHPages=true
+        run: dotnet publish ./Movie.csproj -c:Release -o:publish -p:GHPages=true
 
       # Deploy the site
       - name: Deploy
