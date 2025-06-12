@@ -1,0 +1,39 @@
+<div class="search-bar" >
+    <input type="text" value="@title" @oninput="OnTitleChanged" placeholder="The Lord of the Rings" name="title" />
+    <input type="number" value="@year" @oninput="OnYearChanged"  placeholder="Year" name="year" />
+    <button class="search-btn" @onclick="Search">Search</button>
+    <button class="reset-btn" @onclick="Re">Reset</button>
+</div>
+
+@code {
+    private string? title;
+    private string? year;
+    [Parameter] public string Title { get; set; }
+    [Parameter] public string Year { get; set; }
+    //this should named {Component}Changed
+    //below automatically bind Title to TitleChanged. you can pass an action to achieve this too
+    [Parameter] public EventCallback<string> TitleChanged { get; set; }
+    [Parameter] public EventCallback<string> YearChanged { get; set; }
+    [Parameter] public EventCallback Search { get; set; }
+    [Parameter] public EventCallback Reset { get; set; }
+
+    private async Task Re()
+    {
+        await Reset.InvokeAsync();
+        title = String.Empty;
+        year = string.Empty;
+    }
+    
+    private async Task OnTitleChanged(ChangeEventArgs e)
+    {
+        title = e?.Value?.ToString();
+        await TitleChanged.InvokeAsync(title);
+    }
+
+    private async Task OnYearChanged(ChangeEventArgs e)
+    {
+        year = e?.Value?.ToString();
+        await YearChanged.InvokeAsync(year);
+    }
+
+}

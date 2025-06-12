@@ -1,0 +1,67 @@
+﻿@page "/"
+@using System.Diagnostics
+@using System.Net
+@using Movie.Components
+@using Movie.Models
+@using Movie.Services
+@inject IJSRuntime JsRuntime
+@inject IMovieService MovieService
+
+<PageTitle>Movie</PageTitle>
+<div>
+    
+
+<SearchBar @bind-Title="Title" @bind-Year="Year" Search="Search" Reset="Reset"></SearchBar>
+
+@if (SearchResult is not null)
+{
+    @if (SearchResult.Response is "True")
+    {
+        <MovieList Result=SearchResult @bind-CurrentPageNum="CurrentPageNum" TotalPageNum="TotalPageNum" Search="Search"/>
+    }
+    else
+    {
+        <span>@SearchResult.Error</span>
+    }
+}
+</div>
+
+@code {
+    private string Title = "Lord of The Ring";
+    private string Year = string.Empty;
+    private int CurrentPageNum = 1;
+    private int TotalPageNum = 1;
+    
+    public Result SearchResult;
+
+    public void TitleChanged(ChangeEventArgs arg) => Title = arg.Value.ToString();
+    
+    public void YearChanged(ChangeEventArgs arg) => Year = arg.Value.ToString();
+    
+    private async Task Search()
+    {
+        SearchResult = await MovieService.SearchMovies(Title, Year, CurrentPageNum);
+        if (SearchResult.Response == "True")
+        {
+            var total = Int32.Parse(SearchResult.TotalResults);
+            TotalPageNum = total / 10;
+            if (total % 10 > 0)
+                TotalPageNum += 1;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Search();
+        await base.OnInitializedAsync();
+    }
+
+    private void Reset()
+    {
+        Console.WriteLine("Reset");
+        Title = String.Empty;
+        Year = String.Empty;
+    }
+
+}
+

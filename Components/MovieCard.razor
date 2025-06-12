@@ -1,0 +1,28 @@
+@using Movie.Models
+@inject HttpClient Client;
+
+<div class="movie-card" @onclick="() => OnMovieClick(Movie.ImdbID)">
+    @* <a href="/movies/@Movie.ImdbID" class="movie-card"> *@
+    <img class="poster" src=@Movie.Poster alt="poster"/>
+    <div class="movie-info">
+        <h2>@Movie.Title</h2>
+        <p>@Movie.Year</p>
+    </div>
+    @* </a> *@
+</div>
+@code {
+    [Parameter]
+    public Movie Movie { get; set; }
+
+    private async Task GetMovie(string imdbId)
+    {
+        var response = await Client.GetAsync($"https://www.omdbapi.com/?apikey=72a5618d&i={imdbId}");
+    } 
+    
+    [Parameter]
+    public EventCallback<string> OnClick { get; set; }
+    private Task OnMovieClick(string imdbID)
+    {
+        return OnClick.InvokeAsync(imdbID);
+    }
+}

@@ -1,0 +1,122 @@
+@using Movie.Models
+@using Movie.Services
+@inject IMovieService MovieService
+
+<div class="list">
+    
+    <div class="card-container">
+        @foreach (var movie in Result.Search)
+        {
+            <MovieCard Movie=movie OnClick="OpenMovieModal"></MovieCard>
+        }
+    </div>
+    @if ( TotalPageNum > 0)
+    {
+        <div class="pagination">
+            @* @for (var page = 1; page <= TotalPageNum; page++) *@
+            @* { *@
+            @*     <a href="/movies/search?page=@(page)" class="page-number @(page == CurrentPageNum ? "active" : "")"> *@
+            @*         @(page) *@
+            @*     </a> *@
+            @* } *@
+            
+            
+            @if (TotalPageNum > 4)
+            {
+                <button @onclick="(args => OnPageNumChanged(1))" class="page-number">1</button>
+                <span class="ellipsis">...</span>
+            }
+
+            @for (var page = Math.Max(1, CurrentPageNum - 3); page <= Math.Min(TotalPageNum, CurrentPageNum + 3); page++)
+            {
+                var capture = page;
+                <button @onclick="(args => OnPageNumChanged(capture))" class="page-number @(page == CurrentPageNum ? "active" : "")">
+                    @(page)
+                </button>
+            }
+
+            @if (CurrentPageNum < TotalPageNum - 3)
+            {
+                <span class="ellipsis">...</span>
+                <button @onclick="(args => OnPageNumChanged(TotalPageNum))" class="page-number">
+                    @TotalPageNum
+                </button>
+            }
+        </div>
+    }
+</div>
+@if (Movie != null)
+{
+    @* <p>Modal should be here</p> *@
+    <div class="custom-modal-backdrop" @onclick="CloseModal">
+        <div class="custom-modal" @onclick:stopPropagation="true">
+            <button class="custom-close-button" @onclick="CloseModal">×</button>
+            
+            
+            
+            <div class="detail">
+                <div class="movie-container">
+                    <div class="poster">
+                        <img src=@Movie.Poster alt="" />
+                    </div>
+                    <div class="details">
+                        <h1>@Movie.Title</h1>
+                        <div class="sub-info">
+                            Rated: @Movie.Rated | Runtime: @Movie.Runtime | Genre: @Movie.Genre 
+                        </div>
+                        <div class="plot">
+                            @Movie.Plot
+                        </div>
+                        <div class="info-block"><strong>Director:</strong> @Movie.Director</div>
+                        <div class="info-block"><strong>Writers:</strong>@Movie.Writer</div>
+                        <div class="info-block"><strong>Actors:</strong> @Movie.Actors</div>
+                        <div class="info-block"><strong>Language:</strong> @Movie.Language</div>
+                        <div class="info-block"><strong>Country:</strong> @Movie.Country</div>
+                        <div class="info-block"><strong>Awards:</strong> @Movie.Awards</div>
+                        <div class="info-block"><strong>Box Office:</strong> @Movie.BoxOffice</div>
+                        <div class="info-block"><strong>IMDb Rating:</strong> @($"{@Movie.ImdbRating} ({@Movie.ImdbVotes} votes)")</div>
+
+                        <div class="ratings">
+                            @foreach (var rating in Movie.Ratings)
+                            {
+                                <div class="rating"><strong>@rating.Source:</strong> @rating.Value</div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            
+            </div>
+        </div>
+    </div>
+}
+@code {
+    [Parameter] public Result Result { get; set; }
+    [Parameter] public int CurrentPageNum { get; set; }
+    [Parameter] public int TotalPageNum { get; set; }
+    [Parameter] public EventCallback Search { get; set; }
+
+    [Parameter] public EventCallback<int> CurrentPageNumChanged { get; set; }
+
+    private async Task OnPageNumChanged(int id)
+    {
+        Console.WriteLine(id);
+        await CurrentPageNumChanged.InvokeAsync(id);
+        await Search.InvokeAsync();
+    }
+    
+    
+    
+    private MovieInfo Movie;
+
+    private async Task OpenMovieModal(string imdbID)
+    {
+        Movie = await MovieService.GetMovieInfo(imdbID);
+    }
+
+    private void CloseModal()
+    {
+        Movie = null;
+    }
+
+} 
+
